@@ -1,9 +1,9 @@
 // Καθαρή λογική παιχνιδιού (χωρίς δίκτυο) ώστε να ελέγχεται εύκολα.
 
-const LETTERS = ['Α', 'Β', 'Γ', 'Δ', 'Ε', 'Ζ', 'Η', 'Θ', 'Ι', 'Κ', 'Λ', 'Μ',
+export const LETTERS = ['Α', 'Β', 'Γ', 'Δ', 'Ε', 'Ζ', 'Η', 'Θ', 'Ι', 'Κ', 'Λ', 'Μ',
   'Ν', 'Ξ', 'Ο', 'Π', 'Ρ', 'Σ', 'Τ', 'Υ', 'Φ', 'Χ', 'Ψ', 'Ω'];
 
-const CATEGORIES = [
+export const CATEGORIES = [
   { id: 'name', label: 'Όνομα' },
   { id: 'animal', label: 'Ζώο' },
   { id: 'plant', label: 'Φυτό' },
@@ -12,11 +12,11 @@ const CATEGORIES = [
   { id: 'job', label: 'Επάγγελμα' },
   { id: 'food', label: 'Φαγητό' },
 ];
-const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
-const DEFAULT_CATEGORIES = ['name', 'animal', 'plant', 'thing'];
+export const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
+export const DEFAULT_CATEGORIES = ['name', 'animal', 'plant', 'thing'];
 
 // Κανονικοποίηση: πεζά, χωρίς τόνους/διαλυτικά, τελικό σίγμα -> σ, ενιαία κενά.
-function normalize(text) {
+export function normalize(text) {
   if (typeof text !== 'string') return '';
   return text
     .normalize('NFD')
@@ -28,7 +28,7 @@ function normalize(text) {
 }
 
 // Έγκυρη απάντηση = μη κενή και ξεκινά από το γράμμα του γύρου.
-function isValid(answer, letter) {
+export function isValid(answer, letter) {
   const n = normalize(answer);
   return n.length > 0 && n.startsWith(normalize(letter));
 }
@@ -43,7 +43,7 @@ function isValid(answer, letter) {
  *   perAnswer[pid][catId] = { text, points, status }
  *   status: 'empty' | 'invalid' | 'unique' | 'shared'
  */
-function scoreRound(playerIds, answers, categories, letter) {
+export function scoreRound(playerIds, answers, categories, letter) {
   const perAnswer = {};
   const totals = {};
   for (const pid of playerIds) { perAnswer[pid] = {}; totals[pid] = 0; }
@@ -79,13 +79,9 @@ function scoreRound(playerIds, answers, categories, letter) {
   return { perAnswer, totals };
 }
 
-function pickLetter(used) {
+export function pickLetter(used) {
   const remaining = LETTERS.filter((l) => !used.includes(l));
   if (remaining.length === 0) return null;
   return remaining[Math.floor(Math.random() * remaining.length)];
 }
 
-module.exports = {
-  LETTERS, CATEGORIES, CATEGORY_IDS, DEFAULT_CATEGORIES,
-  normalize, isValid, scoreRound, pickLetter,
-};

@@ -1,20 +1,19 @@
 {
   "name": "onoma-zoo-fyto-pragma",
-  "version": "0.1.0",
-  "description": "Ελληνικό multiplayer παιχνίδι Όνομα, Ζώο, Φυτό, Πράγμα",
-  "main": "server.js",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Ελληνικό multiplayer παιχνίδι Όνομα, Ζώο, Φυτό, Πράγμα (Cloudflare Workers + Durable Objects)",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "test": "node test/smoke.js"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "express": "^4.21.2",
-    "socket.io": "^4.8.1"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node test/room.test.js"
   },
   "devDependencies": {
-    "socket.io-client": "^4.8.1"
+    "wrangler": "^4.161.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261110.1": true
   }
 }

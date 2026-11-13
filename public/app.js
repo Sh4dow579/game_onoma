@@ -1,4 +1,3 @@
-/* global io */
 (() => {
   const CATEGORIES = [
     { id: 'name', label: 'Όνομα' },
@@ -43,9 +42,52 @@
   let endAt = 0;
   let tick = null;
 
-  const socket = io();
+  // ---- Σύνδεση WebSocket με το δωμάτιο (/ws/ΚΩΔΙΚΟΣ) ----
+  function createConnection() {
+    const handlers = {};
+    let ws = null; let code = null; let pending = {}; let seq = 0; let queue = []; let retry = 0;
+    const fire = (t, d) => handlers[t] && handlers[t](d);
+    function connect() {
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      const my = new WebSocket(`${proto}://${location.host}/ws/${code}`);
+      ws = my;
+      my.onopen = () => {
+        retry = 0;
+        fire('open');                       // πρώτα η επανένταξη (joinRoom)…
+        const q = queue; queue = [];        // …μετά ό,τι περίμενε στην ουρά
+        q.forEach((s) => my.send(s));
+      };
+      my.onmessage = (e) => {
+        let m; try { m = JSON.parse(e.data); } catch { return; }
+        if (m.t === 'ack') { const cb = pending[m.id]; delete pending[m.id]; if (cb) cb(m.d); } else fire(m.t, m.d);
+      };
+      my.onclose = () => {
+        if (ws !== my) return;
+        ws = null;
+        if (!code) return;
+        fire('disconnect');
+        setTimeout(() => { if (code && !ws) connect(); }, Math.min(5000, 500 * 2 ** retry++));
+      };
+    }
+    setInterval(() => { if (ws && ws.readyState === 1) ws.send('{"t":"ping"}'); }, 25000);
+    return {
+      on(t, f) { handlers[t] = f; },
+      open(c) { this.close(); code = c; connect(); },
+      close() {
+        code = null; queue = []; pending = {};
+        if (ws) { const w = ws; ws = null; w.close(); }
+      },
+      emit(t, d, cb) {
+        const msg = { t, d };
+        if (cb) { msg.id = ++seq; pending[msg.id] = cb; }
+        const s = JSON.stringify(msg);
+        if (ws && ws.readyState === 1) ws.send(s); else queue.push(s);
+      },
+    };
+  }
+  const socket = createConnection();
 
-  socket.on('connect', () => {
+  socket.on('open', () => {
     // επανασύνδεση σε δωμάτιο μετά από refresh ή διακοπή δικτύου
     if (roomCode) {
       socket.emit('joinRoom', { code: roomCode, pid }, (res) => {
@@ -72,19 +114,29 @@
     store.set('ozfp.name', n);
     return n;
   }
-  $('createBtn').onclick = () => {
-    const name = getName(); if (!name) return;
+  const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const randomCode = () => Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
+
+  function createRoom(name, attempt = 0) {
+    const code = randomCode();
+    socket.open(code);
     socket.emit('createRoom', { name, pid }, (res) => {
-      if (res.error) { $('homeError').textContent = res.error; return; }
+      if (res.error === 'exists' && attempt < 5) return createRoom(name, attempt + 1);
+      if (res.error) { socket.close(); $('homeError').textContent = res.error; return; }
       enterRoom(res.code);
     });
+  }
+  $('createBtn').onclick = () => {
+    const name = getName(); if (!name) return;
+    createRoom(name);
   };
   function join() {
     const name = getName(); if (!name) return;
     const code = $('codeInput').value.trim().toUpperCase();
-    if (code.length !== 4) { $('homeError').textContent = 'Ο κωδικός έχει 4 χαρακτήρες.'; return; }
+    if (!/^[A-Z0-9]{4}$/.test(code)) { $('homeError').textContent = 'Ο κωδικός έχει 4 χαρακτήρες (λατινικά γράμματα/αριθμοί).'; return; }
+    socket.open(code);
     socket.emit('joinRoom', { code, name, pid }, (res) => {
-      if (res.error) { $('homeError').textContent = res.error; return; }
+      if (res.error) { socket.close(); $('homeError').textContent = res.error; return; }
       enterRoom(res.code);
     });
   }
@@ -102,6 +154,7 @@
   }
   function leaveLocal() {
     roomCode = null; state = null; renderedRound = 0; localAnswers = {};
+    socket.close();
     store.del('ozfp.room');
     history.replaceState(null, '', location.pathname);
     render();
@@ -333,4 +386,5 @@
   }
 
   render();
+  if (roomCode) socket.open(roomCode); // το 'open' θα κάνει joinRoom
 })();
