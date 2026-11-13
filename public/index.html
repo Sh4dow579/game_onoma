@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Όνομα, Ζώο, Φυτό, Πράγμα</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Όνομα · Ζώο · Φυτό · Πράγμα</h1>
+    <div id="roomBadge" class="badge hidden"></div>
+  </header>
+
+  <main>
+    <!-- Αρχική -->
+    <section id="screen-home" class="screen card">
+      <h2>Καλώς ήρθες!</h2>
+      <label>Το όνομά σου
+        <input id="nameInput" maxlength="20" autocomplete="nickname" placeholder="π.χ. Σπύρος">
+      </label>
+      <button id="createBtn" class="primary">Νέο δωμάτιο</button>
+      <div class="divider"><span>ή μπες σε υπάρχον</span></div>
+      <div class="row">
+        <input id="codeInput" maxlength="4" placeholder="ΚΩΔΙΚΟΣ" class="code-input" autocapitalize="characters">
+        <button id="joinBtn">Είσοδος</button>
+      </div>
+      <p id="homeError" class="error"></p>
+    </section>
+
+    <!-- Αναμονή -->
+    <section id="screen-lobby" class="screen hidden">
+      <div class="card">
+        <h2>Δωμάτιο <span class="code" id="lobbyCode"></span></h2>
+        <p class="muted">Στείλε τον σύνδεσμο στους φίλους σου:</p>
+        <div class="row">
+          <input id="shareLink" readonly>
+          <button id="copyBtn">Αντιγραφή</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Παίκτες</h3>
+          <ul id="lobbyPlayers" class="players"></ul>
+        </div>
+        <div class="card">
+          <h3>Ρυθμίσεις</h3>
+          <div id="settingsHost">
+            <p class="label">Κατηγορίες</p>
+            <div id="catChecks" class="checks"></div>
+            <p class="label">Διάρκεια γύρου: <strong id="durLabel"></strong></p>
+            <input id="durRange" type="range" min="1" max="5" step="1">
+            <button id="startBtn" class="primary big">Έναρξη παιχνιδιού</button>
+          </div>
+          <div id="settingsGuest">
+            <p class="label">Κατηγορίες</p>
+            <p id="catList"></p>
+            <p class="label">Διάρκεια γύρου: <strong id="durLabelGuest"></strong></p>
+            <p class="muted">Περιμένουμε τον δημιουργό να ξεκινήσει…</p>
+          </div>
+        </div>
+      </div>
+      <button id="leaveBtn" class="link">Έξοδος από το δωμάτιο</button>
+    </section>
+
+    <!-- Γύρος -->
+    <section id="screen-play" class="screen hidden">
+      <div class="play-head card">
+        <div>
+          <div class="muted small">Γύρος <span id="roundNo"></span>/<span id="roundMax"></span></div>
+          <div class="letter" id="letter"></div>
+        </div>
+        <div class="timer" id="timer">0:00</div>
+      </div>
+      <div id="spectator" class="card hidden">
+        <p>Μπήκες στη μέση του γύρου. Θα παίξεις από τον επόμενο!</p>
+      </div>
+      <form id="answerForm" class="card" autocomplete="off">
+        <div id="answerFields"></div>
+        <button id="stopBtn" type="submit" class="stop big" disabled>ΣΤΟΠ!</button>
+        <p id="playError" class="error"></p>
+      </form>
+      <div id="collecting" class="card hidden center">
+        <p id="collectMsg" class="big-text"></p>
+        <p class="muted">Υπολογισμός πόντων…</p>
+      </div>
+      <div class="hostbar hidden" id="hostbarPlay">
+        <button id="endGameBtnPlay" class="danger">Τερματισμός παιχνιδιού</button>
+      </div>
+    </section>
+
+    <!-- Αποτελέσματα γύρου / Τέλος -->
+    <section id="screen-results" class="screen hidden">
+      <div class="card">
+        <h2 id="resultsTitle"></h2>
+        <p id="resultsSub" class="muted"></p>
+        <div class="table-wrap"><table id="resultsTable"></table></div>
+        <p class="legend small muted">
+          <span class="pill unique">μοναδική</span>
+          <span class="pill shared">κοινή</span>
+          <span class="pill invalid">λάθος γράμμα</span>
+          <span class="pill empty">κενή</span>
+        </p>
+      </div>
+      <div class="card">
+        <h3 id="boardTitle">Βαθμολογία</h3>
+        <ol id="scoreboard" class="scoreboard"></ol>
+      </div>
+      <div class="hostbar" id="hostbarResults">
+        <button id="nextBtn" class="primary big">Επόμενος γύρος</button>
+        <button id="endGameBtn" class="danger">Τερματισμός παιχνιδιού</button>
+        <button id="newGameBtn" class="primary big">Νέο παιχνίδι</button>
+      </div>
+      <p id="waitHost" class="muted center">Περιμένουμε τον δημιουργό…</p>
+      <button id="leaveBtn2" class="link">Έξοδος από το δωμάτιο</button>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

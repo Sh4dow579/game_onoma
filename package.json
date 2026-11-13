@@ -1,0 +1,20 @@
+{
+  "name": "onoma-zoo-fyto-pragma",
+  "version": "0.1.0",
+  "description": "Ελληνικό multiplayer παιχνίδι Όνομα, Ζώο, Φυτό, Πράγμα",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
+  }
+}
